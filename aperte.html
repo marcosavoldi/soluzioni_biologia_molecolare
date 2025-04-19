@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elenco Risposte</title>
+    <style>
+        /* ===========================
+   Variabili CSS
+=========================== */
+        :root {
+            --primary-color: #0073e6;
+            /* Blu navbar, pulsanti, ecc. */
+            --secondary-color: #fff;
+            /* Bianco */
+            --background-color: #f4f4f4;
+            /* Sfondo generale pagina */
+            --text-color: #333;
+            /* Testo principale */
+            --font-family: Arial, sans-serif;
+            --max-width: 800px;
+            --border-radius: 5px;
+            --padding: 1rem;
+            --font-size-base: 1rem;
+            --line-height-base: 1.5;
+
+            /* Colori e font per question/answer */
+            --question-bg-color: #0073e6;
+            /* Sfondo blu per la domanda */
+            --question-text-color: #fff;
+            /* Testo bianco per la domanda */
+            --question-font-size: 1.2rem;
+
+            --answer-bg-color: #fff;
+            /* Sfondo bianco per la risposta */
+            --answer-text-color: #333;
+            /* Testo nero per la risposta */
+            --answer-font-weight: bold;
+            --answer-font-size: 1.2rem;
+        }
+
+        /* ===========================
+   Stili Globali
+=========================== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            margin: 0;
+            padding-top: 70px;
+            /* lascia spazio per la navbar fissa */
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 1.8rem;
+            margin: 0 0 1rem 0;
+            font-weight: bold;
+        }
+
+        /* ===========================
+   Barra di Navigazione Alfabetica
+=========================== */
+        .alphabet-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: 0.5rem;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .alphabet-nav a {
+            color: var(--secondary-color);
+            margin: 0 0.5rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .alphabet-nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===========================
+   Barra di Ricerca a Scomparsa
+=========================== */
+        .search-bar-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #search-toggle {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        #search-bar {
+            margin-top: 0.5rem;
+        }
+
+        #search-bar input[type="text"] {
+            width: 200px;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ===========================
+   Pulsante per tornare alla Index (opzionale)
+=========================== */
+        #back-button {
+            position: fixed;
+            bottom: 80px;
+            /* Posizionato sopra il pulsante della lente */
+            right: 20px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            text-align: center;
+            line-height: 1;
+            z-index: 2000;
+        }
+
+        /* ===========================
+   Contenitore FAQ
+=========================== */
+        .faq-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* 
+   Ogni blocco di Domanda+Risposta.
+   Se preferisci un bordo esterno comune, aggiungi qui border, background, ecc.
+*/
+        .faq-item {
+            margin-bottom: 1rem;
+            /* Spazio tra una FAQ e l'altra */
+        }
+
+        /* ===========================
+   DOMANDA
+   - Sottofondo blu e testo bianco
+=========================== */
+        .question {
+            background-color: var(--question-bg-color);
+            color: var(--question-text-color);
+            font-size: var(--question-font-size);
+            padding: var(--padding);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            margin: 0;
+            /* Rimuoviamo eventuali margin di default */
+            font-weight: bold;
+        }
+
+        /* ===========================
+   RISPOSTA
+   - Sfondo bianco e testo nero
+=========================== */
+        .answer {
+            background-color: var(--answer-bg-color);
+            color: var(--answer-text-color);
+            padding: var(--padding);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            border: 1px solid #ddd;
+            border-top: none;
+            /* per unire visivamente con la domanda */
+            font-weight: var(--answer-font-weight);
+            font-size: var(--answer-font-size);
+            margin: 0;
+        }
+
+        /* ===========================
+   Responsive Design
+=========================== */
+        @media (max-width: 768px) {
+            :root {
+                --font-size-base: 1.2rem;
+                --line-height-base: 1.6;
+                --padding: 1.5rem;
+                --answer-font-size: 1.4rem;
+                --question-font-size: 1.4rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            #search-bar input[type="text"] {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --font-size-base: 1.4rem;
+                --line-height-base: 1.7;
+                --padding: 1.5rem;
+                --answer-font-size: 1.6rem;
+                --question-font-size: 1.6rem;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            #search-bar input[type="text"] {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* ====================================
+   (Facoltativo) Se hai altri pulsanti
+==================================== */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #button-a,
+        #search-toggle {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Barra di Navigazione Alfabetica -->
+    <div class="alphabet-nav">
+        <a href="#letter-A">A</a>
+        <a href="#letter-B">B</a>
+        <a href="#letter-C">C</a>
+        <a href="#letter-D">D</a>
+        <a href="#letter-E">E</a>
+        <a href="#letter-F">F</a>
+        <a href="#letter-G">G</a>
+        <a href="#letter-H">H</a>
+        <a href="#letter-I">I</a>
+        <a href="#letter-J">J</a>
+        <a href="#letter-K">K</a>
+        <a href="#letter-L">L</a>
+        <a href="#letter-M">M</a>
+        <a href="#letter-N">N</a>
+        <a href="#letter-O">O</a>
+        <a href="#letter-P">P</a>
+        <a href="#letter-Q">Q</a>
+        <a href="#letter-R">R</a>
+        <a href="#letter-S">S</a>
+        <a href="#letter-T">T</a>
+        <a href="#letter-U">U</a>
+        <a href="#letter-V">V</a>
+        <a href="#letter-W">W</a>
+        <a href="#letter-X">X</a>
+        <a href="#letter-Y">Y</a>
+        <a href="#letter-Z">Z</a>
+    </div>
+
+    <h1>Elenco Risposte</h1>
+
+    <div class="answer-container" id="answer-container">
+
+        <div class="question">Anemia ed emoglobina?</div>
+        <div class="answer">L’anemia è una condizione in cui i livelli di emoglobina nel sangue sono troppo bassi,
+            riducendo la capacità di trasportare ossigeno ai tessuti. L’emoglobina è una proteina presente nei globuli
+            rossi, essenziale per legare e trasportare l’ossigeno dai polmoni al resto del corpo. Le cause di anemia
+            includono carenza di ferro, perdita di sangue, malattie croniche o problemi nella produzione di globuli
+            rossi. I sintomi più comuni sono stanchezza, pallore, vertigini e mancanza di fiato.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che cos’è la variabilità biologica?</div>
+        <div class="answer">La variabilità biologica è il concetto che descrive le differenze naturali che esistono tra
+            gli individui di una stessa specie o all’interno di un organismo stesso. Queste variazioni possono essere
+            influenzate da fattori genetici, ambientali, ecc…</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Cosa sono i traccianti nelle reazioni immunochimiche?</div>
+        <div class="answer">I traccianti sono sostanze o molecole utilizzate per rendere visibile o misurabile il legame
+            tra un anticorpo e un antigene. Si lega a uno degli elementi della reazione immunochimica (anticorpo o
+            antigene) e a sua presenza consente di: Monitorare il legame antigene-anticorpo.Amplificare il segnale per
+            migliorare la sensibilità delle analisi.Quantificare l’antigene o l’anticorpo presente nel campione. I
+            traccianti possono essere marcatori radioattivi, enzimatici, fluorescenti o chemiluminescenti. I traccianti
+            sono utilizzati in numerose tecniche immunochimiche, tra cui:ELISA: Traccianti enzimatici o
+            chemiluminescenti per misurare antigeni/anticorpi.Western Blot: Traccianti enzimatici o fluorescenti per
+            rilevare proteine specifiche.Immunofluorescenza: Traccianti fluorescenti per localizzare antigeni in cellule
+            o tessuti.Radioimmunologia: Traccianti radioattivi per dosare ormoni o antigeni in piccolissime quantità.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Caratteristiche e significato diagnostico della creatin chinasi?</div>
+        <div class="answer">La creatin chinasi (CK), o creatina chinasi, è un enzima presente principalmente nei muscoli
+            scheletrici, nel cuore e nel cervello. Ha un ruolo chiave nel metabolismo energetico cellulare, catalizzando
+            la conversione della creatina in fosfocreatina, che serve come riserva energetica per le cellule muscolari.
+            Il significato diagnostico della CK nel siero è utile per identificare condizioni che causano danno
+            muscolare o cardiaco o cerebrale.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Come funziona l’elettroforesi 2D?</div>
+        <div class="answer">L’elettroforesi 2D è una tecnica elettroforetica in cui le proteine vengono separate sia in
+            base al loro peso molecolare che al loro punto isoelettrico così da poter separare ogni singola proteina.
+            Inizialmente le proteine vengono separate in base al loro punto isoelettrico mediante
+            isoelettrofocalizzazione su una striscia di poliacrilamide; poi la striscia viene posizionata su di un gel
+            di poliacrilamide sul quale utilizzando la tecnica SDS-PAGE si separano le proteine in base al loro peso
+            molecolare. Una volta colorate le proteine all’interno del gel con blu di comassi e nitrato d’argento si
+            ottengono, sul gel, una serie di puntini che corrispondono alle specifiche proteine su cui si possono
+            effettuare ulteriori analisi.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che cosa sono le gammopatie monoclonali?</div>
+        <div class="answer">Le gammopatie monoclonali sono un gruppo di malattie caratterizzate dalla produzione anomala
+            di una proteina detta immunoglobulina monoclonale (componente monoclonale o M). Questa proteina è prodotta
+            da cellule plasmatiche, un tipo di globuli bianchi, che proliferano in modo anomalo. Le gammopatie possono
+            essere benigne, come nella gammopatia monoclonale di significato incerto (MGUS), o maligne, come nel mieloma
+            multiplo. I sintomi variano, ma possono includere anemia, debolezza, dolore osseo o nessun sintomo nelle
+            forme asintomatiche. L’esame che si esegue per rilevare la presenza di una gammopatia è l’elettroforesi
+            capillare o su gel di agarosio dalla quale di ottiene una netta banda verso la zona gamma che corrisponde
+            all’anomala quantità di gammaglobuline prodotte dal clone plasmacellulare.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Come sono suddivisi i linfociti?</div>
+        <div class="answer">I linfociti si suddividono in tre principali tipi: linfociti T, linfociti B e linfociti NK.
+            I linfociti T, prodotti nel timo, coordinano la risposta immunitaria e distruggono le cellule infette. I
+            linfociti B, prodotti nel midollo osseo, producono anticorpi per combattere infezioni. I linfociti NK
+            (natural killer) riconoscono e distruggono cellule tumorali o infette da virus senza bisogno di attivazione
+            specifica.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che tipologia di antigeni rappresentano le molecole N-acetilgalattosamina e galattosio?
+            Descrivi il sistema basato sulla presenza/assenza di tali antigeni sullamembrana degli eritrociti?</div>
+        <div class="answer">Le molecole N-acetilgalattosamina e galattosio rappresentano antigeni del sistema AB0.
+            N-acetilgalattosamina è l’antigene A, mentre il galattosio è l’antigene B. Questi antigeni sono presenti
+            sulla membrana degli eritrociti e determinano il gruppo sanguigno. Nel sistema AB0, la presenza di antigeni
+            specifici definisce i gruppi sanguigni: il gruppo A ha antigeni A, il gruppo B ha antigeni B, il gruppo AB
+            ha entrambi, mentre il gruppo 0 non ha né antigeni A né B. La combinazione con gli anticorpi anti-A e anti-B
+            nel plasma influenza le compatibilità trasfusionali.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che cosa è il biomarcatore CEA?</div>
+        <div class="answer">Il CEA (antigene carcinoembrionario) è un biomarcatore utilizzato per monitorare alcuni tipi
+            di tumore, principalmente quelli del colon-retto, ma anche del polmone, pancreas, stomaco e mammella. È una
+            glicoproteina normalmente presente in basse concentrazioni nel sangue, ma i suoi livelli aumentano in
+            presenza di tumori maligni o alcune condizioni benigne come infiammazioni intestinali, epatopatie o fumo. Il
+            CEA è utile per monitorare la progressione della malattia, valutare l’efficacia delle terapie e rilevare
+            eventuali recidive.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che cosa sono le malattie autoimmuni?</div>
+        <div class="answer">Le malattie autoimmuni sono patologie in cui il sistema immunitario attacca i tessuti
+            dell’organismo, perdendo la capacità di distinguere il self dal non-self. Possono causare distruzione,
+            crescita anomala o disfunzione degli organi colpiti. Ne esistono oltre 80 tipi, che possono essere
+            circoscritte a un organo specifico o sistemiche, a seconda degli autoanticorpi coinvolti. Le cause non sono
+            chiare, e i trattamenti attuali mirano solo a ridurre i sintomi. La diagnosi si basa sull’identificazione
+            degli autoanticorpi nel siero tramite test come anticorpi anti-nucleo, anti-antigeni nucleari estraibili e
+            anti-DNA a doppia elica. Esempi di malattie autoimmuni: la sclerosi multipla, artrite reumatoide, diabete di
+            tipo 1, la celiachia.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che cos’è e come è diagnostica la celiachia?</div>
+        <div class="answer">La celiachia è una malattia autoimmune scatenata dal consumo di glutine presente nel cibo in
+            persone geneticamente predisposte. L’assunzione di glutine in una persona affetta da celiachia induce una
+            risposta immunitaria anomala. Le cellule del sistema immunitario e gli anticorpi prodotti, infatti,
+            attaccano e distruggono i villi intestinali. Questa anomala risposta provoca un’infiammazione intestinale
+            con danno e distruzione dei villi della mucosa intestinale. L’esposizione al glutine determina la continua
+            produzione di questi autoanticorpi e quindi la progressiva distruzione dei tessuti attaccati da essi. Con la
+            distruzione dei villi viene ridotta la capacità dell’organismo di assorbire i nutrienti contenuti nel cibo e
+            compaiono sintomi legati a malnutrizione e malassorbimento. La diagnosi si basa su test sierologici per
+            rilevare anticorpi specifici come gli anti-transglutaminasi (tTG) e gli anti-endomisio (EMA).</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Come si sviluppa una reazione di ipersensibilità?</div>
+        <div class="answer">Una reazione di ipersensibilità immediata si divide in due fasi: sensibilizzazione e
+            reazione. Durante la sensibilizzazione, l’allergene viene riconosciuto dalle cellule presentanti l’antigene,
+            che lo trasformano e lo espongono tramite il complesso MHC, attivando le cellule T helper. Queste,
+            rilasciando interleuchine, stimolano le cellule B a produrre IgE, che si legano ai mastociti e basofili.
+            Alla successiva esposizione, l’antigene si lega alle IgE, causando il rilascio di mediatori infiammatori,
+            come istamina, che scatenano la risposta allergica. Nei soggetti allergici, questo processo è alterato, con
+            risposte esagerate e prolungate. Invece di spegnersi, la reazione può persistere e diffondersi, causando
+            infiammazione prolungata o coinvolgimento di aree circostanti, portando a sintomi locali o sistemici più
+            gravi.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Come è regolato il rilascio degli ormoni tiroideii?</div>
+        <div class="answer">Il rilascio degli ormoni tiroidei (T3 e T4) è regolato dall’asse ipotalamo-ipofisi-tiroide.
+            L’ipotalamo secerne TRH (ormone di rilascio della tireotropina), che stimola l’ipofisi a produrre TSH
+            (ormone tireostimolante). Il TSH, a sua volta, agisce sulla tiroide, inducendo la sintesi e il rilascio di
+            T3 e T4. I livelli di T3 e T4 nel sangue regolano il processo tramite feedback negativo: quando sono
+            elevati, inibiscono la produzione di TRH e TSH; quando sono bassi, ne stimolano la produzione. Questo
+            meccanismo mantiene l’equilibrio ormonale.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Che cosa sono gli emogasanalizzatori?</div>
+        <div class="answer">L’emogasanalizzatore è uno strumento in grado di eseguire in tempi rapidi, su un piccolo
+            volume di sangue e in modo totalmente automatico diverse analisi e misurano nel sangue arterioso i livelli
+            di ossigeno, anidride carbonica, pH, bicarbonati e saturazione di ossigeno.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Come si misurano i livelli di GH?</div>
+        <div class="answer">I livelli di GH nel sangue si misurano con anticorpi monoclonali con marcatori enzimatici,
+            fluorescenti o chemiluminescenti. È utile per diagnosticare condizioni di iperproduzione di GH, come
+            gigantismo e acromegalia, e per monitorarne il trattamento. Non è indicata per deficit di GH, poiché i
+            livelli basali sono molto bassi e difficili da misurare. Il rilascio pulsatile del GH rende poco affidabile
+            un singolo dosaggio; il prelievo deve avvenire al mattino, a digiuno e in condizioni di riposo. I livelli di
+            IGF-1, regolati dal GH e stabili durante il giorno, sono usati come misura indiretta e affidabile del GH
+            medio.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Caratteristiche e funzioni del paratormone?</div>
+        <div class="answer">Il paratormone (PTH) è un ormone prodotto dalle ghiandole paratiroidi, fondamentale per la
+            regolazione del metabolismo del calcio e del fosforo. La sua funzione principale è aumentare i livelli di
+            calcio nel sangue. Agisce stimolando il riassorbimento osseo per liberare calcio, aumentando l’assorbimento
+            intestinale di calcio tramite l’attivazione della vitamina D e promuovendo il riassorbimento renale di
+            calcio riducendo l’escrezione urinaria. Contemporaneamente, riduce i livelli di fosfato nel sangue
+            aumentando la sua escrezione renale. Alterazioni del PTH possono indicare disfunzioni come
+            iperparatiroidismo o ipoparatiroidismo.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Di cosa si occupa la medicina di laboratorio?</div>
+        <div class="answer">La medicina di laboratorio contribuisce nel determinare la diagnosi, la prognosi, lo
+            screening e il monitoraggio della terapia applicando metodologie laboratoriali tecnico-scientifiche.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Descivere l’elettroforesi SDS-PAGE?</div>
+        <div class="answer">L’elettroforesi SDS-PAGE è una tecnica di laboratorio usata per separare proteine in base
+            alla loro dimensione molecolare. SDS (sodio dodecil solfato): Un detergente che denatura le proteine (le
+            “srotola”) e le carica negativamente, mascherando la loro carica naturale.PAGE : Un gel di poliacrilammide
+            che funziona come un setaccio, separando le proteine in base alla dimensione.Come funziona:1)Le proteine
+            vengono trattate con SDS e riscaldate per denaturarle.2)Vengono caricate nel gel e sottoposte a un campo
+            elettrico.3)Le proteine migrano verso il polo positivo: le più piccole si muovono più velocemente attraverso
+            i pori del gel, mentre le più grandi si muovono più lentamente.Risultato:Le proteine sono separate in bande
+            ordinate per dimensione, che possono essere visualizzate con coloranti specifici. Questa tecnica è usata per
+            analizzare la purezza, il peso molecolare o la quantità di proteine.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Descrivere l’elettroforesi capillare?</div>
+        <div class="answer">L’elettroforesi capillare è una tecnica che separa molecole cariche, come proteine, DNA o
+            piccoli ioni, utilizzando un sottile tubo di vetro (il capillare) e un campo elettrico.Come funziona: 1)Un
+            campione viene introdotto in un capillare riempito con una soluzione conduttiva. 2)Viene applicato un campo
+            elettrico lungo il capillare. 3)Le molecole migrano a velocità diverse a seconda della loro carica,
+            dimensione e forma:Molecole più piccole o più cariche si muovono più velocemente.Molecole più grandi o con
+            cariche minori si muovono più lentamente. Generalmente i rilevatori utilizzati nell’elettroforesi capillare
+            sono rivelatori UV, di fluorescenza o di massa. Questa tecnica viene utilizzata per analizzare un’ampia
+            gamma di molecole, tra cui farmaci, proteine, aminoacidi, vitamine e anche virus.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Descrivere la tecnica del Western Blot?</div>
+        <div class="answer">Il Western Blot è una tecnica usata per identificare e quantificare proteine specifiche in
+            un campione biologico. Le proteine vengono separate in base al peso molecolare tramite elettroforesi
+            SDS-PAGE e trasferite su una membrana di nitrocellulosa o PVDF. La membrana viene bloccata con una soluzione
+            per evitare legami non specifici e incubata con un anticorpo primario che riconosce la proteina target.
+            Successivamente, un anticorpo secondario legato a un enzima o a un marker fluorescente si lega al primario.
+            La proteina viene rilevata attraverso metodi chimici o luminosi, consentendo la sua visualizzazione e
+            quantificazione. La tecnica è molto usata in ricerca per analizzare l’espressione proteica e le
+            modificazioni post-traduzionali.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Descrivere la misurazione dei corpi chetonici?</div>
+        <div class="answer">La misurazione dei corpi chetonici si effettua per valutare il metabolismo lipidico, utile
+            in condizioni come il diabete scompensato, il digiuno prolungato o diete chetogeniche. I corpi chetonici
+            principali (acetone, acetoacetato e beta-idrossibutirrato) possono essere misurati nel sangue o nelle urine.
+            Nel sangue, il beta-idrossibutirrato è il più affidabile e viene misurato tramite test enzimatici o
+            dispositivi portatili. Nelle urine, i corpi chetonici (principalmente acetoacetato) si rilevano con strisce
+            reattive che cambiano colore proporzionalmente alla loro concentrazione. La misurazione è utile per
+            monitorare chetoacidosi diabetica o adattamento metabolico.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Descrivere brevemente la tecnica della real time-PCR?</div>
+        <div class="answer">La real time-PCR è una tecnica che amplifica e quantifica in tempo reale il DNA target.
+            Utilizza un termociclatore con un sistema di rilevamento ottico per monitorare l’accumulo del prodotto
+            amplificato ciclo dopo ciclo. La quantificazione si basa sull’uso di sonde fluorescenti o coloranti che si
+            legano al DNA amplificato. L’intensità della fluorescenza, proporzionale alla quantità di DNA, viene
+            registrata durante ogni ciclo. È utilizzata per diagnosi, analisi geniche e rilevamento di patogeni grazie
+            alla sua sensibilità e rapidità.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Ematuria efemoglobinuria?</div>
+        <div class="answer">L’ematuria è la presenza di globuli rossi intatti nelle urine, visibile al microscopio o
+            macroscopicamente (urine rosse). Può essere causata da infezioni, calcoli, tumori o traumi delle vie
+            urinarie. L’emoglobinuria, invece, è la presenza di emoglobina libera nelle urine, dovuta alla rottura dei
+            globuli rossi nel circolo sanguigno (emolisi intravascolare). Si differenziano perché nell’ematuria i
+            globuli rossi sono presenti, mentre nell’emoglobinuria non lo sono, essendo già distrutti. Entrambe possono
+            indicare patologie renali, urologiche o sistemiche.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Gli anticorpi nelle relazioni immunochimiche?</div>
+        <div class="answer">Gli anticorpi e le relazioni immunochimiche rappresentano un meccanismo chiave del sistema
+            immunitario e una base fondamentale per molte tecniche diagnostiche, terapeutiche e di ricerca, grazie alla
+            loro specificità nel riconoscere e legarsi agli antigeni. Possono essere usati sia anticorpi monoclonali che
+            policlonali.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Gli esami chimico fisico delle urine?</div>
+        <div class="answer">L’esame chimico-fisico delle urine (ECMU) valuta aspetto, colore, densità, pH e componenti
+            chimiche come proteine, glucosio e creatinina. Include anche l’analisi corpuscolata per rilevare emazie,
+            leucociti, batteri e altre particelle, utilizzando strumenti automatici o il microscopio. Le urine devono
+            essere raccolte al mattino, a digiuno, con attenzione all’igiene e scartando il primo mitto. Devono essere
+            analizzate entro 4 ore o conservate a 4°C. Il colore delle urine, normalmente giallo, varia con idratazione,
+            dieta o patologie. La composizione include acqua (97%), proteine, glucosio e sali minerali, con densità tra
+            1007-1035 g/L e pH tra 4.5 e 7.5.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Il processo diagnostico: fasi ed errori?</div>
+        <div class="answer">Il processo diagnostico si divide in cinque fasi: 1)La fase pre-pre analitica riguarda le
+            attività svolte fuori dal laboratorio, dalla richiesta del test al trasporto del campione. 2)La fase
+            pre-analitica si svolge in laboratorio e comprende attività preliminari come etichettatura, aliquotazione e
+            centrifugazione.3) La fase analitica è quella in cui si esegue il dosaggio dell’analita. 4)La fase
+            post-analitica, anch’essa in laboratorio, include la validazione dei dati e la preparazione del referto.
+            5)Infine, la fase post-post analitica avviene fuori dal laboratorio e comprende l’interpretazione dei dati
+            da parte del medico per definire diagnosi e terapia.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Il prelievo di sangue?</div>
+        <div class="answer">I prelievi di sangue si distinguono in: prelievo venoso, prelievo arterioso e prelievo
+            capillare. Per il prelievo venoso vengono utilizzate vene superficiali come quelle presenti nella piega
+            interna del gomito ed il sangue viene prelevato con aghi di circa 20 gauche. Il prelievo arterioso presenta
+            maggiori difficoltà e rischi, per questo motivo viene eseguito solo per necessità di emogasanalisi e
+            solitamente il sangue viene prelevato dall’arteria radiale mediante aghi più lunghi e utilizzando siringhe e
+            provette di vetro per mantenere inalterati i livelli di gas disciolti. Il prelievo capillare è meno invasivo
+            e il sangue viene prelevato generalmente facendo un piccolo foro sul polpastrello di un dito della mano e
+            viene utilizzato per emogasanalisi o misurazione per mezzo di strumenti istantanei di vari livelli
+            sanguigni, ad esempio, la misurazione glicemica per individui affetti da diabete.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Il trasporto inverso del colesterolo?</div>
+        <div class="answer">Il trasporto inverso del colesterolo riporta il colesterolo in eccesso al fegato per essere
+            smaltito. Il trasporto inverso del colesterolo avviene per mezzo delle HDL che catturano il colesterolo
+            libero dai vari tessuti e vengono poi trasportate verso il fegato dove il colesterolo viene liberato
+            direttamente dalle HDL diventando HDL remnants che vengono poi riciclate oppure dove il colesterolo
+            contenuto nelle HDL viene trasferito alle VLDL e alle LDL che vengono poi smaltite dal fegato.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Il sistema sangugno ABO?</div>
+        <div class="answer">Il sistema sanguigno ABO si basa sulla presenza o assenza di antigeni A e B sulla superficie
+            degli eritrociti. I gruppi sanguigni sono quattro: A (antigene A, anticorpi anti-B), B (antigene B,
+            anticorpi anti-A), AB (antigeni A e B, nessun anticorpo) e 0 (nessun antigene, anticorpi anti-A e anti-B).
+            Questo sistema è cruciale per le trasfusioni di sangue, poiché il sangue incompatibile può causare reazioni
+            gravi. Il gruppo 0 è il donatore universale, mentre il gruppo AB è il ricevente universale.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Il sistema sanguigno Rh+?</div>
+        <div class="answer">Il sistema sanguigno Rh si basa sulla presenza o assenza dell’antigene D sulla superficie
+            degli eritrociti. Se l’antigene D è presente, il sangue è Rh positivo (Rh+); se assente, è Rh negativo
+            (Rh-). Questo sistema è importante nelle trasfusioni e durante la gravidanza, poiché un’incompatibilità tra
+            madre e feto (ad esempio madre Rh- e feto Rh+) può causare la malattia emolitica del neonato. Il sangue Rh+
+            può essere trasfuso solo a individui Rh+ per evitare reazioni immunitarie.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">I marcatori di danno renale: urea e cistatina C?</div>
+        <div class="answer">L’urea e la cistatina C sono marcatori usati per valutare la funzionalità renale. L’urea è
+            un prodotto finale del metabolismo proteico, eliminato dai reni. Valori elevati indicano ridotta filtrazione
+            glomerulare, spesso associata a insufficienza renale o disidratazione, ma può essere influenzata dalla dieta
+            o da stati catabolici. La cistatina C, invece, è una proteina prodotta da tutte le cellule nucleate,
+            filtrata liberamente dai glomeruli e non influenzata da fattori esterni come dieta o infiammazione. È un
+            marker più sensibile per rilevare precocemente alterazioni nella funzionalità renale rispetto all’urea o
+            alla creatinina.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">I marcatori di danno renale: creatinina?</div>
+        <div class="answer">La creatinina è un marker chiave per valutare la funzionalità renale. È un prodotto del
+            metabolismo muscolare, eliminato principalmente dai reni attraverso la filtrazione glomerulare. Valori
+            elevati di creatinina nel sangue indicano una riduzione della funzione renale o problemi di filtrazione.
+            Tuttavia, i livelli possono variare in base a età, sesso, massa muscolare e dieta. È utilizzata per
+            calcolare il tasso di filtrazione glomerulare (GFR), un parametro fondamentale per diagnosticare e
+            monitorare l’insufficienza renale.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Il pHmetro e l’urinometro nelle analisi delle urine?</div>
+        <div class="answer">Il pHmetro e l’urinometro sono strumenti utilizzati nelle analisi delle urine. Il pHmetro
+            misura il pH delle urine in modo preciso, fornendo informazioni sull’acidità o alcalinità, utile per
+            diagnosticare infezioni urinarie, calcoli renali o disordini metabolici. L’urinometro determina la densità
+            urinaria, valutando la concentrazione di soluti. Una densità normale varia tra 1.005 e 1.030 g/ml e fornisce
+            indicazioni su idratazione, funzionalità renale o presenza di sostanze anomale nelle urine.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">L’alfa1 antitripsina: caratteristiche e significato diagnostico?</div>
+        <div class="answer">L’alfa-1 antitripsina (AAT) è una proteina prodotta dal fegato, appartenente alla famiglia
+            delle serpine, con funzione di inibitore delle proteasi, principalmente dell’elastasi neutrofila. Protegge i
+            tessuti da danni enzimatici durante processi infiammatori. La sua carenza è legata a mutazioni genetiche ed
+            è associata a patologie come enfisema polmonare precoce e malattie epatiche, come cirrosi o epatite
+            neonatale. Alti livelli di AAT si riscontrano in condizioni infiammatorie acute, infezioni o neoplasie. La
+            sua valutazione diagnostica avviene tramite elettroforesi o dosaggio sierico per indagare malattie
+            polmonari, epatiche o stati infiammatori cronici.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">L’aptoglobina: caratteristiche e significato diagnostico?</div>
+        <div class="answer">L’aptoglobina è una proteina prodotta dal fegato che lega l’emoglobina libera nel sangue,
+            impedendone la perdita e prevenendo danni ossidativi. La sua concentrazione nel sangue diminuisce in caso di
+            emolisi intravascolare, poiché viene consumata legandosi all’emoglobina rilasciata dai globuli rossi
+            distrutti. Un livello basso indica emolisi o malattie epatiche, mentre un livello alto può riflettere
+            infiammazione o stress acuto. È utilizzata come marker diagnostico per condizioni emolitiche e nella
+            valutazione delle malattie infiammatorie.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">La proteina C reattiva: caratteristiche e significato diagnostico?</div>
+        <div class="answer">La proteina C reattiva (PCR) è una proteina prodotta dal fegato in risposta a infiammazioni
+            acute o croniche. I suoi livelli aumentano rapidamente in presenza di infezioni, traumi, malattie autoimmuni
+            o tumori, rendendola un indicatore non specifico di infiammazione. È utilizzata per monitorare l’andamento
+            di malattie infiammatorie, come l’artrite reumatoide, e per valutare il rischio cardiovascolare in caso di
+            infiammazione cronica di basso grado.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">La via esogena dei lipidi?</div>
+        <div class="answer">La via esogena dei lipidi parte dall’intestino dove i trigliceridi provenienti
+            dall’alimentazione vengono trasformati in acidi grassi dalle lipasi intestinali, poi assieme agli esteri del
+            colesterolo formano i chilomicroni, lipoproteine che vengono rilasciate in circolo e trasportate ai vari
+            tessuti.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">La via endogena dei lipidi?</div>
+        <div class="answer">La via endogena inizia nel fegato dove vengono sintetizzate le VLDL contenenti trigliceridi
+            e colesterolo, le VLDL entrano poi in circolo dove vengono trasportate ai vari tessuti. Le VLDL vengono poi
+            idrolizzate ottenendo il colesterolo esterificato e il colesterolo libero prodotto viene assorbito dalle
+            HDL; in questo modo le VLDL si trasformano in VLDL remnants che tornano al fegato per essere riutilizzate.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">L’utilizzo del dipstick nella diagnostica renale e urinaria?</div>
+        <div class="answer">Il dipstick è un test diagnostico rapido per valutare la composizione chimica e fisica
+            dell’urina. Consiste in una striscia reattiva con pad chimici che cambiano colore in presenza di specifici
+            componenti. È utilizzato per rilevare proteine, glucosio, sangue, nitriti, pH, chetoni e leucociti. Questo
+            test è utile nella diagnosi di infezioni urinarie, malattie renali, diabete e disturbi metabolici. Fornisce
+            risultati rapidi, ma spesso richiede ulteriori analisi di conferma.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">La fibrosi cistica: cause. Effetti e diagnosi?</div>
+        <div class="answer">La fibrosi cistica è una malattia genetica ereditaria autosomica recessiva, causata da
+            mutazioni nel gene CFTR (Cystic Fibrosis Transmembrane Conductance Regulator), situato sul cromosoma 7.
+            Questo gene regola il trasporto di cloro e sodio nelle cellule epiteliali. Le mutazioni causano
+            un’alterazione nella produzione di muco, che diventa denso e viscoso creando problemi a livello dei polmoni
+            (infiammazione cronica, tosse persistente, patologie come bronchiti e polmoniti e frequenti infezioni).
+            Mancando lo strato liquido sulla superficie epiteliale gli scambi gassosi sono rallentati e questo causando
+            problemi di insufficienza cardio-respiratoria. Insufficienza pancreatica. Possono essere coinvolti il
+            fegato, l’intestino, gli organi riproduttivi maschili e le ghiandole salivari e sudorifere. Diagnosi
+            1)Screening neonatale:Test del tripsinogeno immunoreattivo (IRT): Identifica i neonati a rischio.Seguito da
+            esami di conferma nei casi sospetti. 2)Test del sudore:Misura la concentrazione di cloro nel sudore. 3)Test
+            genetico:Identificazione di mutazioni del gene CFTR.Utile per confermare la diagnosi e per la consulenza
+            genetica. 4)Esami di supporto:Funzionalità polmonare (spirometria).Esami per il malassorbimento (es.
+            dosaggio di grassi nelle feci).Imaging (radiografie o TAC toraciche) per valutare danni ai polmoni.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">L’emofilia A e B cause. Effetti e diagnosi?</div>
+        <div class="answer">L’emofilia è una malattia rara di origine genetica legata alla coagulazione del sangue: si
+            manifesta prevalentemente nei maschi, mentre le donne possono essere portatrici sane senza manifestare i
+            sintomi. Emofilia A: Deficit del fattore VIII della coagulazione. È la forma più comune (circa l’80% dei
+            casi di emofilia). Emofilia B: Deficit del fattore IX della coagulazione. Effetti: Sanguinamento eccessivo:
+            Anche traumi minori possono causare emorragie prolungate.Emorragie interne: Possono verificarsi
+            spontaneamente. Danni articolari. Diagnosi: 1)Anamnesi familiare: Ricerca di casi di emofilia nella
+            famiglia.2)Esami di laboratorio:Tempo di protrombina (PT): Normale.Tempo di tromboplastina parziale attivata
+            (aPTT): Prolungato.Dosaggio dei fattori VIII o IX: Permette di confermare il tipo e la gravità della
+            malattia. 3)Test genetici: Identificazione di mutazioni nei geni del fattore VIII o IX, utili per confermare
+            la diagnosi e per la consulenza genetica.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">La diagnosi prenatale?</div>
+        <div class="answer">La diagnosi prenatale comprende una serie di esami che permettono di valutare la salute e il
+            benessere del feto durante la gravidanza. Esistono diversi metodi diagnostici, sia invasivi che non
+            invasivi, per identificare eventuali malattie genetiche o cromosomiche. Le malattie genetiche possono
+            essere: Non ereditarie, come la sindrome di Down o altre cromosomopatie, solitamente in coppie considerate a
+            rischio. Ereditarie, per cui la diagnosi viene effettuata in coppie con un rischio elevato. I Metodi
+            diagnostici invasivi sono:Amniocentesi: prelievo di liquido amniotico contenente cellule fetali. Utilizzato
+            per analisi cromosomiche e genetiche.Villocentesi: prelievo di villi coriali dalla placenta, che condividono
+            lo stesso patrimonio genetico dell’embrione.Entrambi i metodi presentano un rischio minimo di complicanze
+            (circa 1%) che possono danneggiare il feto o la madre. Metodi diagnostici non invasivi:Test del siero
+            materno: Ricerca di marcatori biochimici nel sangue materno, come nel tri-test o triplotest. Questi test
+            dipendono dal momento della gravidanza in cui vengono effettuati e non hanno sensibilità e specificità
+            assolute. NIPT (Test Prenatale Non Invasivo): Analisi del DNA fetale libero circolante nel sangue materno.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Metodi manuali e autonomi di conta cellulare?</div>
+        <div class="answer">I metodi manuali di conta cellulare utilizzano una camera di conta, in cui un campione di
+            sangue viene diluito e osservato al microscopio per contare le cellule su una griglia. Questo metodo è
+            preciso ma richiede tempo ed esperienza. I metodi automatici usano analizzatori ematologici, strumenti che
+            sfruttano principi come l’impedenza elettrica o la citometria a flusso per contare rapidamente e con
+            precisione cellule come globuli rossi, bianchi e piastrine. I metodi automatici sono più veloci e adatti per
+            alti volumi, ma possono richiedere controllo manuale in caso di anomalie.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le differenze tra metodi diretti e metodi indiretti?</div>
+        <div class="answer">Nei metodi diretti i valori misurati vengono ottenuti direttamente senza misurare grandezze
+            associate quindi si ottiene una misura in termini di grandezza fisica del misurando; nei metodi indiretti
+            viene misurata una grandezza associata funzionalmente alla grandezza fisica del misurando. Che cosa descrive
+            la legge di Lambert Beer? La legge di Lambert-Beer è una formula che descrive come la luce viene assorbita
+            da una sostanza quando attraversa una soluzione. È usata spesso in chimica e fisica per misurare la
+            concentrazione di una sostanza in un liquido.La legge dice che l’assorbimento della luce dipende da tre
+            fattori principali: 1)La concentrazione della sostanza nella soluzione: più è concentrata, più luce verrà
+            assorbita. 2)Lo spessore del percorso della luce attraverso la soluzione (chiamato “cammino ottico”): più è
+            lungo, più luce viene assorbita. 3)La capacità della sostanza di assorbire luce, che dipende dal tipo di
+            sostanza e dalla lunghezza d’onda della luce utilizzata (questo si chiama “coefficiente di estinzione
+            molare”). La formula matematica è:A = ε × c × l Dove: A è l’assorbanza (quanta luce viene assorbita); ε è il
+            coefficiente di estinzione molare (una misura di quanto la sostanza assorbe la luce); c è la concentrazione
+            della sostanza; l è la lunghezza del cammino ottico.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono gli errori di misura?</div>
+        <div class="answer">Gli errori di misura si suddividono in errori grossolani, errori casuali ed errori
+            sistematici. Gli errori grossolani sono generalmente identificabili e sono dovuti ad una scorretta
+            applicazione delle procedure analitiche, essendo identificabili sono anche risolvibili. Gli errori casuali
+            sono dovuti a tutte le piccole variazioni nella misurazione che non sono eliminabili. Gli errori sistematici
+            hanno cause definite e possono dipendere da molteplici elementi come i reagenti, la strumentazione tarata
+            male o mal funzionante e possono essere eliminati.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche dei metodi competitivi e non competitivi?</div>
+        <div class="answer">I metodi competitivi sono basati sulla competizione tra un ag non marcato e un ag marcato
+            per gli ab che sono in concentrazione costante. Nei metodi competitivi l’ag da analizzare viene aggiunto in
+            quantità variabili mentre l’ag marcato viene aggiunto costantemente così facendo il segnale misurato, che è
+            direttamente proporzionale alla quantità di ag marcato, diminuirà all’aumentare del ag analita; questo
+            metodo ha il vantaggio di poter essere utilizzato anche per ag molto piccoli e apteni con un solo epitopo. I
+            metodi non competitivi chiamati anche metodi ELISA sono caratterizzati da una proporzionalità diretta tra il
+            segnale e la concentrazione di analita; l’analisi necessita di un eccesso di ab che riconoscano almeno due
+            diversi epitopi del ag, per cui questi metodi non sono adatti all’analisi di ag molto piccoli. Le
+            concentrazioni di analita non devono essere eccessivamente elevate altrimenti andrebbero a saturare il
+            sistema ottenendo basse quantità di segnale che andrebbe a sottostimare la reale concentrazione di analita;
+            e tra i vantaggi dei metodi non competitivi si ha una maggiore specificità e sensibilità.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche dei metodi in fase omogenea e non omogenea?</div>
+        <div class="answer">I metodi in fase omogenea sono metodi immunochimici che non richiedono una separazione tra
+            antigene e anticorpo legati ed antigeni liberi e anticorpi liberi. I metodi in fase non omogenea invece
+            richiedono tale separazione in quanto le parti non legate interferiscono con i sistemi di rivelazione
+            analitica o semplicemente il tracciante non fa distinzione tra il complesso legato e antigeni e anticorpi
+            liberi; in questo caso è quindi necessario ottenere il complesso antigene-anticorpo lavando via le molecole
+            non legate al complesso prima di procedere alla rivelazione.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono i principali marcatori di danni epatici?</div>
+        <div class="answer">I principali marcatori di danno epatico sono enzimi e altre sostanze che, quando misurati
+            nel sangue, aiutano a valutare la funzionalità e lo stato di salute del fegato. I più rilevanti sono le
+            transaminasi: alanina aminotransferasi (ALT) e la AST. Altri marcatori che aumentano in caso di colestasi
+            sono la gammaglutammiltransferasi e la fosfatasi alcalina (ALP).</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche dei chilomicroni delle VLDL?</div>
+        <div class="answer">I chilomicroni sono le lipoproteine più grandi e vengono sintetizzate nell’intestino dove
+            catturano i lipidi provenienti dall’alimentazione per trasportarli ai vari tessuti; una volta rilasciati i
+            lipidi si trasformano in chilomicroni remnants che vengono trasportati al fegato per essere smaltiti. Le
+            VLDL sono lipoproteine che trasportano i trigliceridi prodotti dal fegato ai vari tessuti dove vengono
+            rilasciati sotto forma di acidi grassi; una volta rilasciato il loro contenuto le VLDL si trasformano in
+            LDL. Le dimensioni dei chilomicroni e delle VLDL dipendono dalle quantità di lipidi e di trigliceridi che
+            hanno rispettivamente immagazzinato.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche delle lipoproteine HDL e LDL?</div>
+        <div class="answer">Il compito delle lipoproteine LDL e HDL è quello di trasportare il colesterolo ai vari
+            tessuti. Le LDL immagazzinano il colesterolo e vengono trasportate ai tessuti dove vengono assorbite dalle
+            cellule provviste del recettore specifico per le LDL; se questo recettore è difettoso le LDL in circolo
+            rischiano di accumularsi provocando ipercolesterolemia o finendo intrappolate nelle giunzioni cellulari dove
+            vengono attaccate dai macrofagi formando le placche arteriosclerotiche. Le HDL, invece, immagazzinano il
+            colesterolo libero esterificandolo e lo trasportano al fegato dove viene smaltito il colesterolo e
+            rilasciate le HDL pronte ad immagazzinare altro colesterolo; per questo le HDL vengono definite spazzini del
+            colesterolo.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le principali forme di dislipidemie?</div>
+        <div class="answer">Le principali forme di dislipidemie includono: ipercolesterolemia, caratterizzata da alti
+            livelli di colesterolo LDL; ipertrigliceridemia, con eccesso di trigliceridi; dislipidemia mista, con
+            aumento sia di colesterolo LDL che di trigliceridi; e dislipidemia aterogena, caratterizzata da alti
+            trigliceridi, bassi livelli di HDL e particelle LDL piccole e dense. Le dislipidemie possono essere primarie
+            (genetiche, come nell’ipercolesterolemia familiare) o secondarie a patologie come diabete, obesità o
+            ipotiroidismo.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Qual è il principio e l’utilizzo diagnostico del metododi Trinder ?</div>
+        <div class="answer">Il metodo di Trinder è un test che usa una reazione chimica per misurare sostanze come
+            salicilati (ad esempio l’aspirina) o creatinina nel sangue. Quando queste sostanze reagiscono con il
+            perossido di idrogeno, producono un colore. L’intensità del colore indica la quantità della sostanza. Viene
+            usato per controllare i livelli di farmaci o per test sulla funzionalità renale.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono gli indici eritrocitari?</div>
+        <div class="answer">Gli indici eritrocitari sono parametri del sangue che valutano le caratteristiche dei
+            globuli rossi. Il MCV indica la dimensione media dei globuli rossi, il MCH misura la quantità media di
+            emoglobina per globulo rosso e il MCHC valuta la concentrazione di emoglobina nei globuli rossi. L’RDW,
+            invece, misura la variabilità nella dimensione dei globuli rossi. Questi indici sono utili per diagnosticare
+            e classificare le anemie.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono gli indici piastrinici?</div>
+        <div class="answer">Gli indici piastrinici valutano quantità e caratteristiche delle piastrine nel sangue.
+            Comprendono il conteggio piastrinico totale (PLT), il volume piastrinico medio (MPV), che misura la
+            dimensione media delle piastrine, la distribuzione del volume piastrinico (PDW), che indica la variabilità
+            delle dimensioni, e il rapporto piastrine-linfociti (PLR). Questi parametri sono usati per diagnosticare
+            disturbi come trombocitopenia, trombocitosi o disordini infiammatori e coagulativi.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono i diversi tipi di granulociti?</div>
+        <div class="answer">I granulociti sono divisi in tre gruppi in base alla loro affinità con i coloranti basici o
+            acidi: i neutrofili che hanno bassa affinità sia con i coloranti basici che acidi; i basofili che sono
+            affini ai coloranti basici; e gli eosinofili che sono affini ai coloranti acidi. La maggior parte dei
+            granulociti sono neutrofili, sono i primi a raggiungere la zona infetta e hanno il compito di fagocitare i
+            microorganismi dannosi e le molecole nocive. I basofili, mano numerosi, hanno il compito di proteggere
+            l’organismo dagli allergeni e dai parassiti. Gli eosinofili anch’essi presenti in quantità minori rispetto
+            ai neutrofili hanno il compito di proteggere l’organismo dai parassiti più grandi e di controllare le
+            risposte allergeniche.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono i fattori coinvolti nella formazione del tappo piastrinico?</div>
+        <div class="answer">Il tappo piastrinico si forma a causa di lesioni ai vasi sanguigni ed ha il compito di
+            bloccare la fuoriuscita del sangue. Le piastrine che fuoriescono dal vaso lesionato incontrano il
+            sottoendotelio che essendo ricco di collagene ne promuove l’adesione su di esso; il legame tra le piastrine
+            e il collagene è favorito dal fattore di Von Willebrand. Questi legami fanno si che la forma delle piastrine
+            si modifichi da sferoidali a stellari schiacciate; grazie a questo cambiamento di conformazione, le
+            piastrine, rilasciano ADP e serotonina che favoriscono l’aggregazione ed espongono una glicoproteina sulla
+            loro superficie che permette l’adesione del fibrinogeno ad esse con lo scopo di legare tra loro diverse
+            piastrine formando il tappo piastrinico. Un altro fattore rilasciato dalle piastrine durante la formazione
+            del tappo piastrinico è il trombossano A2 che funge da vasocostrittore limitando il flusso di sangue nella
+            zona lesionata.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le fasi dell’emostasi primaria-?</div>
+        <div class="answer">L’emostasi primaria si divide in tre fasi. La prima è la vasocostrizione, in cui il vaso
+            sanguigno lesionato si contrae per ridurre il flusso di sangue. La seconda è l’adesione piastrinica: le
+            piastrine si attaccano al collagene esposto nella parete del vaso grazie al fattore di von Willebrand. La
+            terza fase è l’aggregazione piastrinica, in cui le piastrine si legano tra loro attraverso la fibrinogeno e
+            formano il tappo piastrinico iniziale per bloccare la perdita di sangue.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le fasi e i fatttori coinvolti nel modello sequenziale della coagulazione ?
+        </div>
+        <div class="answer">Il modello sequenziale della coagulazione comprende tre fasi principali: fase iniziale,
+            amplificazione e propagazione.Nella fase iniziale, il fattore tissutale (TF) si lega al fattore VIIa,
+            attivando i fattori IX e X. Il fattore Xa, con il fattore V, forma il complesso protrombinasi che converte
+            la protrombina in trombina.Nella fase di amplificazione, la trombina attiva ulteriori fattori (V, VIII, XI)
+            e stimola l’aggregazione piastrinica, preparando il sito di lesione.Nella propagazione, il fattore IXa, con
+            il fattore VIIIa, attiva altro fattore X. La trombina generata converte il fibrinogeno in fibrina,
+            stabilizzando il coagulo.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le fasi e i fatttori coinvolti nel modello classico della coagulazione?</div>
+        <div class="answer">Il modello classico della coagulazione si divide in tre fasi: via intrinseca, via estrinseca
+            e via comune. La via intrinseca inizia con l’attivazione del fattore XII a contatto con superfici cariche
+            negativamente, coinvolgendo successivamente i fattori XI, IX e VIII.La via estrinseca è attivata dal fattore
+            tissutale (TF), che si lega al fattore VII, formando il complesso TF-VIIa, che attiva il fattore X.Nella via
+            comune, il fattore Xa, insieme al fattore Va, converte la protrombina in trombina. La trombina trasforma il
+            fibrinogeno in fibrina, stabilizzando il coagulo con il fattore XIII.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le patologia che affliggono il rene?</div>
+        <div class="answer">Le principali patologie renali includono glomerulonefriti, caratterizzate da infiammazione
+            dei glomeruli; insufficienza renale acuta o cronica, che comporta riduzione o perdita della funzione renale;
+            nefropatie diabetiche, causate da danni dovuti al diabete; infezioni come pielonefrite; calcoli renali,
+            dovuti alla formazione di cristalli nelle vie urinarie; e tumori renali, tra cui il carcinoma a cellule
+            renali.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le tipologie di cilindri presenti nelle urine?</div>
+        <div class="answer">I cilindri urinari sono strutture cilindriche formate nei tubuli renali e possono indicare
+            varie condizioni. I cilindri ialini sono composti da mucoproteine e possono essere normali in basse
+            quantità. I cilindri eritrocitari indicano sanguinamento nei reni, spesso legato a glomerulonefriti. I
+            cilindri leucocitari segnalano infezioni o infiammazioni come la pielonefrite. I cilindri granulari derivano
+            dalla degradazione cellulare e possono indicare danno renale. I cilindri cerosi sono associati a nefropatie
+            croniche, mentre quelli grassi sono legati a sindrome nefrosica.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono i marcatori di danno cardiaco?</div>
+        <div class="answer">Le malattie cardiovascolari ad oggi rappresentano la prima causa di mortalità, morbilità e
+            ricovero ospedaliero nei paesi industrializzati. Per questo motivo è molto importante poter prevedere e
+            diagnosticare precocemente l’insorgenza di malattie cardiovascolari identificando potenziali biomarcatori
+            essenziali per la diagnosi, la prognosi e il monitoraggio delle terapie. Includono le troponine cardiache
+            (cTnI e cTnT), che sono i più sensibili e specifici per l’infarto miocardico; La creatin-chinasi MB (CK-MB)
+            è un altro marker utilizzato; Il peptide natriuretico di tipo B (BNP) e il proBNP sono marker utili per
+            valutare lo scompenso cardiaco. La mioglobina è un marker precoce ma non specifico, poiché può aumentare
+            anche in altri danni muscolari.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche dei marcatori oncofetali?</div>
+        <div class="answer">Gli antigeni oncofetali sono antigeni di natura proteica prodotte dai tessuti fetali ed
+            embrionali, presenti solo in tracce nel sangue dei soggetti adulti sani. La comparsa di questi antigeni
+            nella vita adulta potrebbe essere spiegata con un meccanismo inverso rispetto a quello che li ha
+            silenziato/represso parzialmente o totalmente dopo la sintesi di determinate proteine nella vita fetale,
+            possono quindi essere prodotti da neoplasie di vari distretti corporei a causa della de-differenziazione del
+            tessuto neoplastico rispetto al tessuto di origine. Gli antigeni in questione sono: 1) Α1-fetoprotine (AFP)
+            è un antigene oncofetale usato per determinare la presenzadi tumori epatici, testicolari ed ovarici 2)
+            Antigene carcinoembrionario ( CEA) è un antigene oncofetale usato per lo studio dei tumori al colon e non è
+            così specifico come si riteneva un tempo 3) Antigene CA-125 è un antigene oncofetale glicoproteico che
+            compare nel siero di pazienti con carcinoma ovarico 4) CA-19 è un altro antigene oncofetale glicoproteico
+            associato con i tumori gastrointestinali 5) L’antigene prostato-specifico (PSA) è un antigene oncofetale
+            importante nello screening e nel monitoraggio di pazienti con carcinoma prostatico.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche del diabete di tipo 2?</div>
+        <div class="answer">Il diabete di tipo 2 è una malattia metabolica caratterizzata da insulino-resistenza, in cui
+            le cellule del corpo rispondono meno all’insulina, e da una ridotta produzione di insulina nel tempo. Ciò
+            causa un aumento persistente dei livelli di glucosio nel sangue (iperglicemia). È più comune negli adulti,
+            spesso associato a obesità, sedentarietà e predisposizione genetica. I sintomi includono sete, minzione
+            frequente, affaticamento e lentezza nella guarigione delle ferite. La diagnosi avviene tramite glicemia a
+            digiuno, curva da carico di glucosio e HbA1c. Il trattamento comprende dieta, esercizio fisico, farmaci
+            ipoglicemizzanti e, talvolta, insulina.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le caratteristiche del diabete di tipo 1?</div>
+        <div class="answer">Il diabete di tipo 1 è una malattia autoimmune in cui il sistema immunitario distrugge le
+            cellule beta del pancreas, responsabili della produzione di insulina. Ciò porta a un deficit assoluto di
+            insulina e a un aumento della glicemia (iperglicemia). Insorge tipicamente in età giovanile, ma può
+            manifestarsi a qualsiasi età. I sintomi principali includono sete intensa, poliuria, perdita di peso,
+            affaticamento e fame eccessiva. La diagnosi si basa su glicemia, HbA1c e, talvolta, sulla presenza di
+            autoanticorpi specifici.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono i principali fattori che possono alterare la misurazione della glicemia?</div>
+        <div class="answer">I livelli di glucosio devono essere misurati nel plasma venoso di soggetti che sono rimasti
+            a digiuno per un arco di tempo di 8-12 ore. La misura della glicemia varia anche a seconda se viene misurata
+            su sangue intero piuttosto che su plasma o siero. I valori più alti si misurano nel siero, seguiti da plasma
+            e sangue intero. Un altro aspetto molto importante da tenere presente è la riduzione della glicolisi che
+            normalmente avviene nel campione di sangue e che riduce la quantità di glucosio del 5-7% l’ora. Per ridurre
+            al minimo la glicolisi si possono aggiungere degli inibitori della glicolisi o sostanze acidificanti.
+            Inoltre, per ridurre la glicolisi si raccomanda di metter il campione, immediatamente dopo il prelievo, in
+            un bagno di acqua e ghiaccio. Infine, la glicemia varia nell’arco della giornata: è più alta la mattino
+            rispetto al pomeriggio. Per questo motivo la glicemia andrebbe sempre misurata la mattino.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le differenze tra allergie e intolleranze?</div>
+        <div class="answer">Le allergie e le intolleranze sono reazioni diverse a sostanze esterne. Le allergie
+            coinvolgono il sistema immunitario, che reagisce in modo eccessivo a un allergene producendo anticorpi IgE.
+            Questa reazione può causare sintomi rapidi e potenzialmente gravi come orticaria, gonfiore, difficoltà
+            respiratorie o shock anafilattico. Le intolleranze, invece, non attivano il sistema immunitario ma derivano
+            dall’incapacità dell’organismo di metabolizzare una sostanza, come il lattosio o il glutine. I sintomi delle
+            intolleranze sono più lenti e solitamente limitati al sistema digestivo, con gonfiore, dolore addominale o
+            diarrea.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le differenze degli antigeni di classe I e gliantigeni di classe II?</div>
+        <div class="answer">Gli allergeni alimentari possono essere suddivisi in allergeni di classe I e classe II. Gli
+            allergeni di classe 1 sono proteine resistenti al calore e alla digestione proteolitica in grado di indurre
+            una reazione di sensibilizzazione a livello gastrointestinale. Tra questi possiamo trovare gli allergeni
+            presenti nel latte, nelle uova, nei pesci, nei crostacei e in alcuni vegetali. Viceversa, gli allergeni
+            alimentari di classe 2 sono sensibili alla digestione e al calore e non inducono una risposta di
+            sensibilizzazione nel tratto gastrointestinale e quindi una risposta sistemica. Causano maggiormente sintomi
+            al cavo orale, perché non resistono alla digestione a livello gastrico. In genere i sintomi compaiono dopo
+            sensibilizzazione di molecole presenti nei pollini. Questo spiega perché alcuni soggetti manifestano una
+            reazione allergica anche violenta la prima volta che mangiano un certo alimento. Questo fenomeno è dovuto a
+            una cross-reattività ed è indicato come coriconoscimento. Gli allergeni di classe 2 sono presenti sia nei
+            vegetali che nei prodotti animali. La cottura dell’alimento provoca l’inattivazione dell’allergene
+            responsabile della risposta allergica, per cui l’alimento cotto potrà essere consumato senza nessun pericolo
+            per il paziente allergico.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le differenze tra ipo- e ipertiroidismo?</div>
+        <div class="answer">L’ipotiroidismo è caratterizzato da una ridotta produzione di ormoni tiroidei (T3 e T4),
+            mentre nell’ipertiroidismo la loro produzione è eccessiva. L’ipotiroidismo provoca sintomi come stanchezza,
+            aumento di peso, intolleranza al freddo, pelle secca e rallentamento del metabolismo. L’ipertiroidismo,
+            invece, causa nervosismo, perdita di peso, intolleranza al caldo, tachicardia e iperattività metabolica. Il
+            trattamento dell’ipertiroidismo è quasi sempre di tipo ablativo, ma si può anche somministrare tiroxina
+            sintetica a lunga durata d’azione. Il trattamento dell’ipotiroidismo può essere di tipo farmacologico,
+            radioterapico o chirurgico.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le differenze tra le indagini molecolari monoplex e multiplex nella diagnostica
+            delle allergie?</div>
+        <div class="answer">Le indagini monoplex analizzano un singolo allergene specifico per volta. Sono utili per
+            confermare la sensibilizzazione a un allergene già sospettato clinicamente, fornendo risultati molto precisi
+            per un target specifico. Le indagini multiplex, invece, analizzano simultaneamente molti allergeni, spesso
+            utilizzando tecnologie basate su microarray. Sono utili per ottenere un profilo completo di
+            sensibilizzazioni, specialmente nei pazienti con allergie complesse o multiple. Le indagini multiplex sono
+            più efficienti e complete, mentre quelle monoplex sono più specifiche per singole conferme diagnostiche.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono le differenze tra il sistema FEIA cap e sistema 3gAllergy?</div>
+        <div class="answer">Il sistema FEIA CAP e il sistema 3gAllergy sono metodi per la diagnostica delle allergie
+            basati sulla rilevazione di anticorpi IgE specifici, ma presentano differenze tecniche.Il sistema FEIA CAP
+            utilizza una fase solida in cui l’allergene è immobilizzato su una spugna in un tubo. Le IgE specifiche nel
+            siero del paziente si legano all’allergene, e la fluorescenza generata dalla reazione enzimatica è
+            proporzionale alla quantità di IgE presente. È considerato altamente sensibile e specifico.Il sistema
+            3gAllergy è una metodica in fase liquida. Consente una diagnosi più rapida e un profilo allergenico più
+            ampio in un’unica analisi.Il sistema FEIA CAP è più adatto per test specifici su singoli allergeni, mentre
+            3gAllergy offre un approccio multiplex per una panoramica completa delle sensibilizzazioni.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono i sistemi utilizzati dell’organismo per contrastare i cambiamenti di pH?</div>
+        <div class="answer">Le difese che l’organismo ha a disposizione per contrastare le variazioni di pH sono:1) Il
+            sistema tampone acido-base è il più importante perché interviene per primo, nell’arco di qualche secondo, e
+            agisce correggendo l’equazione bicarbonato-acido carbonico alterata. 2) I polmoni che eliminano la CO2 in
+            eccesso in pochi minuti con la ventilazione. 3) Il rene è l’ultimo sistema tampone che interviene perché ha
+            il compito di eliminare gli acidi ancora in circolo e il recupero dei bicarbonati che vengono consumati
+            rapidamente e si esaurirebbero in pochi giorni senza il filtro renale: l’azione che il rene svolge è
+            determinante ma lenta, impiega almeno 8-12 ore per agire.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Quali sono gli ormoni rilasciati dall’ipofisi?</div>
+        <div class="answer">L’ipofisi o ghiandola pituitaria rilascia diversi ormoni, suddivisi tra lobo anteriore
+            (adenoipofisi) e lobo posteriore (neuroipofisi). L’adenoipofisi secerne l’ormone della crescita (GH):stimola
+            la crescita dei tessuti, il metabolismo e lo sviluppo muscolo-scheletrico; la prolattina (PRL):promuove la
+            produzione di latte nelle donne dopo il parto; l’ormone adrenocorticotropo (ACTH):stimola le ghiandole
+            surrenali a produrre cortisolo, importante per la risposta allo stress e il metabolismo; l’ormone
+            follicolo-stimolante (FSH):regola lo sviluppo dei follicoli ovarici e la produzione di spermatozoi; l’ormone
+            luteinizzante (LH):stimola l’ovulazione e la produzione di ormoni sessuali (estrogeni, progesterone e
+            testosterone); e la tireotropina (TSH);stimola la tiroide a produrre ormoni tiroidei (T3 e T4), che regolano
+            il metabolismo. La neuroipofisi rilascia ossitocina:favorisce le contrazioni uterine durante il parto e il
+            rilascio di latte; e vasopressina (ADH):regola l’equilibrio idrico e la pressione sanguigna riducendo la
+            perdita di acqua dai reni.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Regolazione della calcemia e significato diagnostico?</div>
+        <div class="answer">Valori ematici di calcio normali: 8.5-10.2 mg/dl. La calcemia è regolata principalmente da
+            paratormone (PTH), vitamina D e calcitonina. Il PTH aumenta i livelli di calcio nel sangue stimolando il
+            riassorbimento osseo, l’assorbimento intestinale (attraverso la vitamina D) e il riassorbimento renale. La
+            vitamina D promuove l’assorbimento intestinale di calcio, mentre la calcitonina riduce i livelli di calcio
+            inibendo il riassorbimento osseo. Alterazioni della calcemia possono indicare patologie come
+            iperparatiroidismo, insufficienza renale, ipovitaminosi D o tumori. La misurazione del calcio sierico è
+            fondamentale per diagnosticare e monitorare queste condizioni.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Sangue intero, plasma e siero: quali le differenze?</div>
+        <div class="answer">Il sangue intero è il sangue raccolto direttamente senza separazione, composto da plasma,
+            globuli rossi, globuli bianchi e piastrine. Il plasma è la parte liquida del sangue, ottenuta centrifugando
+            il sangue intero con un anticoagulante; contiene acqua, proteine, elettroliti, ormoni e fattori della
+            coagulazione. Il siero è il liquido ottenuto dopo la coagulazione del sangue, quindi privo di cellule e
+            fattori della coagulazione come il fibrinogeno, ma ricco di proteine come albumina e immunoglobuline.</div>
+    </div>
+
+
+
+
+    <!-- Aggiungi qui le altre risposte -->
+    </div>
+
+    <!-- Pulsante per tornare alla Index -->
+    <button id="back-button">C</button>
+
+    <!-- Barra di Ricerca a Scomparsa nell'Angolo in Basso a Destra -->
+    <div class="search-bar-container">
+        <button id="search-toggle">&#128269;</button>
+        <div id="search-bar" class="hidden">
+            <input type="text" id="search-input" placeholder="Cerca una risposta...">
+        </div>
+    </div>
+
+    <script>
+        // Toggle visibilità della barra di ricerca
+        document.getElementById('search-toggle').addEventListener('click', function () {
+            const searchBar = document.getElementById('search-bar');
+            searchBar.classList.toggle('hidden');
+        });
+
+        // Funzionalità di ricerca (nuova versione)
+        document.getElementById('search-input').addEventListener('input', function () {
+            const searchQuery = this.value.toLowerCase();
+
+            // Selezioniamo ogni blocco FAQ
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                // Troviamo la domanda e la risposta al suo interno
+                const questionEl = item.querySelector('.question');
+                const answerEl = item.querySelector('.answer');
+
+                // Se per qualche ragione non ci fossero, inizializziamo a stringa vuota
+                const questionText = questionEl ? questionEl.innerText.toLowerCase() : '';
+                const answerText = answerEl ? answerEl.innerText.toLowerCase() : '';
+
+                // Mostra/nascondi l’intero blocco FAQ in base al match del searchQuery
+                if (questionText.includes(searchQuery) || answerText.includes(searchQuery)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        });
+
+        // Pulsante per tornare alla Index
+        document.getElementById('back-button').addEventListener('click', function () {
+            window.location.href = 'index.html';
+        });
+
+        // Assegna automaticamente gli ID alle risposte (opzionale)
+        (function () {
+            const answerItems = document.querySelectorAll('.answer-item');
+            const lettersFound = {};
+
+            answerItems.forEach(answer => {
+                const firstLetter = answer.innerText.trim().charAt(0).toUpperCase();
+                if (!lettersFound[firstLetter]) {
+                    lettersFound[firstLetter] = true;
+                    answer.id = 'letter-' + firstLetter;
+                }
+            });
+        })();
+    </script>
+
+</body>
+
+</html>
