@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,
+               initial-scale=1,
+               maximum-scale=1,
+               user-scalable=no">
     <title>Elenco Risposte</title>
     <style>
         /* ===========================
@@ -257,6 +260,30 @@
             margin-bottom: 10px;
         }
     </style>
+
+<style>
+    html {
+      /* disabilita il text‑auto‑resize su iOS */
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .faq-container,
+.faq-item,
+.question,
+.answer {
+  width: 100%;
+  box-sizing: border-box;          /* include padding e border nella misura */
+}
+
+.question,
+.answer {
+  /* evita che le parole lunghe escano fuori dal contenitore */
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;             /* abilita il wrap automatico */
+}
+  </style>
+
 </head>
 
 <body>
