@@ -3,17 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,
-               initial-scale=1,
-               maximum-scale=1,
-               user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
         /* ===========================
-       Variabili CSS
-    =========================== */
+           Variabili CSS
+        =========================== */
         :root {
             --primary-color: #0073e6;
-            /* Colore originale delle domande */
             --secondary-color: #fff;
             --background-color: #f4f4f4;
             --text-color: #333;
@@ -24,31 +20,31 @@
             --font-size-base: 1rem;
             --line-height-base: 1.5;
 
-            /* Nuove variabili per migliorare la leggibilità */
+            /* Nuove variabili per leggibilità */
             --question-color: #003366;
-            /* Nuovo colore per le domande */
-            --answer-font-weight: bold;
-            /* Aumenta lo spessore del carattere delle risposte */
-            --answer-font-size: 1.2rem;
-            /* Aumenta la dimensione del font delle risposte */
             --question-font-size: 1.2rem;
-            /* Aumenta la dimensione del font delle domande */
+            --answer-font-weight: bold;
+            --answer-font-size: 1.2rem;
         }
 
         /* ===========================
-       Stili Globali
-    =========================== */
+           Global reset & text sizing
+        =========================== */
         *,
         *::before,
         *::after {
             box-sizing: border-box;
         }
 
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
-            font-family: var(--font-family);
-            background-color: var(--background-color);
             margin: 0;
             padding-top: 70px;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
             font-size: var(--font-size-base);
             line-height: var(--line-height-base);
         }
@@ -57,13 +53,13 @@
             text-align: center;
             color: var(--text-color);
             font-size: 1.8rem;
-            margin: 0 0 1rem 0;
+            margin: 0 0 1rem;
             font-weight: bold;
         }
 
         /* ===========================
-       Barra di Navigazione Alfabetica
-    =========================== */
+           Barra di Navigazione Alfabetica
+        =========================== */
         .alphabet-nav {
             position: fixed;
             top: 0;
@@ -86,13 +82,14 @@
         }
 
         /* ===========================
-       Barra di Ricerca a Scomparsa
-    =========================== */
+           Barra di Ricerca a Scomparsa
+        =========================== */
         .search-bar-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 1000;
+            z-index: 2000;
+            /* più alto della nav */
         }
 
         #search-toggle {
@@ -103,6 +100,7 @@
             font-size: 1.5rem;
             border-radius: 50%;
             cursor: pointer;
+            margin-bottom: 10px;
         }
 
         #search-bar {
@@ -122,32 +120,41 @@
         }
 
         /* ===========================
-       Contenitore FAQ
-    =========================== */
+           Contenitore FAQ
+        =========================== */
         .faq-container {
-            max-width: var(--max-width);
-            margin: 0 auto;
+            width: 100%;
+            max-width: none;
+            /* elimina il vincolo di 800px */
+            margin: 0;
             padding: 1rem;
         }
 
         /* ===========================
-       Domande e Risposte
-    =========================== */
+           Domande e Risposte
+        =========================== */
+        .faq-item,
+        .question,
+        .answer {
+            width: 100%;
+        }
+
         .question,
         .answer {
             padding: var(--padding);
             border-radius: var(--border-radius);
+            overflow-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
         }
 
         .question {
             background-color: var(--question-color);
-            /* Usa il nuovo colore */
             color: var(--secondary-color);
             margin-bottom: 0.5rem;
             font-weight: bold;
             cursor: pointer;
             font-size: var(--question-font-size);
-            /* Aumenta la dimensione del font */
         }
 
         .answer {
@@ -157,74 +164,20 @@
             margin-bottom: 1rem;
             border-radius: 0 0 var(--border-radius) var(--border-radius);
             font-weight: var(--answer-font-weight);
-            /* Aumenta lo spessore del carattere */
             font-size: var(--answer-font-size);
-            /* Aumenta la dimensione del font */
             color: var(--text-color);
         }
 
-        .hidden {
-            display: none;
-        }
-
         /* ===========================
-       Responsive Design
-    =========================== */
-        @media (max-width: 768px) {
-            :root {
-                --font-size-base: 1.2rem;
-                --line-height-base: 1.6;
-                --padding: 1.5rem;
-                --answer-font-size: 1.4rem;
-                --question-font-size: 1.4rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .search-bar-container input[type="text"] {
-                font-size: 1.2rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            :root {
-                --font-size-base: 1.4rem;
-                --line-height-base: 1.7;
-                --padding: 1.5rem;
-                --answer-font-size: 1.6rem;
-                --question-font-size: 1.6rem;
-            }
-
-            h1 {
-                font-size: 2.2rem;
-            }
-
-            .search-bar-container input[type="text"] {
-                font-size: 1.3rem;
-            }
-        }
-
-
-        /* Mantieni gli stili esistenti per .search-bar-container */
-        .search-bar-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        /* Nuova classe per il contenitore dei pulsanti */
+           Pulsanti A e Cerca
+        =========================== */
         .button-container {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Stili per entrambi i pulsanti */
-        #button-a,
-        #search-toggle {
+        #button-a {
             background-color: var(--primary-color);
             color: var(--secondary-color);
             border: none;
@@ -234,31 +187,46 @@
             cursor: pointer;
             margin-bottom: 10px;
         }
+
+        /* ===========================
+           Responsive Design
+        =========================== */
+        @media (max-width: 768px) {
+            :root {
+                --font-size-base: 1.2rem;
+                --line-height-base: 1.6;
+                --padding: 1.5rem;
+                --question-font-size: 1.4rem;
+                --answer-font-size: 1.4rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            #search-bar input[type="text"] {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --font-size-base: 1.4rem;
+                --line-height-base: 1.7;
+                --padding: 1.5rem;
+                --question-font-size: 1.6rem;
+                --answer-font-size: 1.6rem;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            #search-bar input[type="text"] {
+                font-size: 1.3rem;
+            }
+        }
     </style>
-
-<style>
-    html {
-      /* disabilita il text‑auto‑resize su iOS */
-      -webkit-text-size-adjust: 100%;
-    }
-
-    .faq-container,
-.faq-item,
-.question,
-.answer {
-  width: 100%;
-  box-sizing: border-box;          /* include padding e border nella misura */
-}
-
-.question,
-.answer {
-  /* evita che le parole lunghe escano fuori dal contenitore */
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;             /* abilita il wrap automatico */
-}
-
-  </style>
 </head>
 
 <body>
